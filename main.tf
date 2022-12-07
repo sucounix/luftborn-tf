@@ -8,10 +8,7 @@ terraform {
 }
 
 provider "azurerm" {
-  subscription_id = ""
-  client_id       = ""
-  client_secret   = ""
-  tenant_id       = ""
+
   features {}
 }
 
@@ -44,7 +41,7 @@ resource "azurerm_resource_group" "network-rg"{
 # Create the network VNET
 resource "azurerm_virtual_network" "network-vnet" {
   name                = "app-network-vnet"
-  address_space       = ["10.0.0.0/16"]
+  address_space       = [var.network-vnet-cidr]
   resource_group_name = azurerm_resource_group.network-rg.name
   location            = azurerm_resource_group.network-rg.location
 }
@@ -52,7 +49,7 @@ resource "azurerm_virtual_network" "network-vnet" {
 # Create a subnet for VM
 resource "azurerm_subnet" "vm-subnet" {
   name                 = "app-vm-subnet"
-  address_prefixes     = ["10.0.1.0/24"]
+  address_prefixes     = [var.vm-subnet-cidr]
   virtual_network_name = azurerm_virtual_network.network-vnet.name
   resource_group_name  = azurerm_resource_group.network-rg.name
 }
@@ -139,7 +136,7 @@ resource "azurerm_linux_virtual_machine" "linux_vm" {
   name                = "linuxvm"
   resource_group_name = local.resource_group
   location            = local.location
-  size                = "Standard_D2s_v3"
+  size                = var.nginx_vm_size
   admin_username      = "linuxusr"  
   network_interface_ids = [
     azurerm_network_interface.nginx-nic.id,
